@@ -1,7 +1,8 @@
 # TopoChamp: Game Rules & Development Plan
 
-**Status:** draft for review (2026-10-04). Nothing has been built yet.
-Open questions are in [section 6](#6-open-questions). Please answer them before development starts.
+**Status:** approved 2026-10-04. Phases 0–6 are built; phase 7 is partly done (offline/PWA and a
+deploy workflow are ready, not yet published). See [section 7](#7-implementation-status) for
+what was built, deviations from this plan and known limitations.
 
 ---
 
@@ -37,6 +38,7 @@ The game remembers which places the player got wrong and asks those more often.
 | Type | Shape on map | Examples |
 |---|---|---|
 | Country | area | Ireland, France |
+| Part of a country ("landsdeel") | area | Vlaanderen, Wallonië, Schotland, Engeland |
 | Province / state | area | Utrecht, Bavaria, Texas |
 | City | point | Paris, Zwolle |
 | River | line | Rhine, Danube |
@@ -55,12 +57,18 @@ The game remembers which places the player got wrong and asks those more often.
 | Coastline | ✔ | ✔ | ✔ |
 | Outer border of the region (needed for landlocked countries such as Switzerland) | ✔ | ✔ | ✔ |
 | Internal borders (countries / provinces) | ✔ | ✔ | – |
-| Rivers and lakes on the list | ✔ | ✔ | – |
+| Countries / provinces coloured in light tones (setting, on by default; neighbours always differ) | ✔ | ✔ | – |
+| Rivers (setting, on by default) | ✔ | ✔ | ✔ |
+| Lakes (setting, on by default; large lakes such as the IJsselmeer always) | ✔ | ✔ | ✔ |
 | Dots for cities on the list | ✔ | – | – |
 | Labels / names | – | – | – |
 
 Rules for every level:
-- **Only places on the list are drawn.** Places that are not on the list get no dot or line.
+- **Rivers and lakes are part of the map's look**, not of the question list. Two separate settings ("Show
+  rivers", "Show lakes") switch them on or off; whether a river or lake is *asked* depends only on the
+  learning list. A click on any drawn river counts as a click on that river ("That's the Moselle").
+  To make river questions harder, switch rivers off. *(Changed after play-testing, 2026-10-04.)*
+- **Only places on the list get a dot or ring.** Cities and tiny areas that are not on the list are not marked.
 - **Land outside the region** is plain grey and can't be clicked. The sea is soft blue.
 - **No labels** are shown while a question is open. Names only appear in the feedback after an answer.
 - **Zoom and pan** work on every level: mouse wheel, pinch, or drag. A reset button returns to the full map. This should be restricted to reasonable amounts of zoom, not allowing users to zoom in excessively and playing around (becoming distracted).
@@ -93,8 +101,7 @@ Each question gives **0–100 points**. Each answer is also marked **correct or 
 
 **Cities on Easy** (the dots are visible): a click snaps to the nearest dot.
 - **Right dot:** 100 points, correct.
-- **Wrong dot:** 0 points, wrong. The feedback says "That's Rotterdam."
-  Reason: picking the wrong city is a real mistake, even if that city is close by. *(See open question 5.)*
+- **Wrong dot:** partial points by the distance formula, but wrong. The feedback says "That's Rotterdam." *(Decision 5.)*
 - **No dot hit:** partial points by the distance formula. The answer is wrong.
 
 **Cities on Middle and Hard** (no dots): points by the distance formula. The answer is correct only if both of these hold:
@@ -125,9 +132,14 @@ The percentages are starting values and will be tuned by play-testing.
 
 - **Multipliers**
 - **Time multiplier:** points can be multiplied based on how quickly the player answers.
+  *As built:* correct answers within 3 s ×1.5, within 6 s ×1.25, within 10 s ×1.1 (typing gets twice as long).
 - **Streak multiplier:** consecutive correct answers increase the points awarded.
+  *As built:* +10 % for each correct answer in a row, up to ×2. A wrong answer or a skip ends the streak.
   - There should be an option to skip a question, which is available 2 times per session, giving the player no points but do give the answer. Repeat the same question later on again.
+    *As built:* skipping counts as "wrong" for the repetition boxes, so the place comes back more often. Not available in a test run.
 - **Difficulty multiplier:** harder questions can have higher multipliers.
+  *As built:* level (easy ×1, middle ×1.5, hard ×2) × question kind (click or choose-4 ×1, choose-8 ×1.25, type ×1.5).
+- Stars and the test-run grade use the points *before* multipliers, so they measure knowledge only.
 
 ### 2.6 Scoring: "What is this?"
 
@@ -141,7 +153,7 @@ The percentages are starting values and will be tuned by play-testing.
 - **Other names:** known alternative names are accepted, e.g. Den Haag / 's-Gravenhage, Den Bosch.
 - **Spelling setting:**
   - **Fuzzy matching:** the system will attempt to match answers even if there are minor mistakes, but it will highlight when a mistake was made. If not possible or enabled:
-    - **Lenient (default):** 1 typo is allowed in short names and 2 in long names. A typo answer gets 75 points and counts as correct, and the right spelling is shown. 
+    - **Lenient (default):** 1 typo is allowed in short names and 2 in long names. A typo answer gets 75 points and counts as correct, and the right spelling is shown. Swapping two neighbouring letters counts as one typo; wrong and missing letters are highlighted.
     - **Strict:** the name must be exact apart from capitals. Use this when spelling counts on the test.
 
 ### 2.7 Feedback after each answer
@@ -285,9 +297,9 @@ Phases 0–2 give a first playable version ("Where is it?" on Europe). We can sh
 
 ---
 
-## 6. Open questions
+## 6. Decisions
 
-Each question has a proposed default. "OK" to all of them is a valid answer.
+Answered 2026-10-04 (the answers are in italics). Language default chosen: Dutch.
 
 1. **Language.** Which language should place names and the menus use? For example Dutch (Parijs, Duitsland, Rijn) or English (Paris, Germany, Rhine). This also decides which spellings count in typing mode.
    *Menus and names in both languages with a switch; you pick the default.*
@@ -307,3 +319,64 @@ Each question has a proposed default. "OK" to all of them is a valid answer.
    *Only rivers on the list by default. Choice for showing big rivers as background available.*
 9.  **Test country.** Which country should phase 0 use for the country-level pack? The Netherlands is the placeholder.
    *The Netherlands by default.*
+
+---
+
+## 7. Implementation status
+
+*Last updated 2026-10-04.*
+
+| # | Phase | Status |
+|---|---|---|
+| 0 | Foundation & data proof | ✅ Done. 197 packs: World, 6 continents, 190 countries (11 MB gzipped in total; Netherlands 50 KB, Europe 270 KB). |
+| 1 | Map rendering | ✅ Done. 3 levels, zoom limited to ×5 (country) / ×8 (continent, world), pan stays within the map, touch and mouse. |
+| 2 | Core game: "Where is it?" | ✅ Done, including multipliers, skips, confetti and sounds. |
+| 3 | Regions & learning lists | ✅ Done. List editor with paste, matching, choices for ambiguous names, quick-add groups, search, own spelling per place. |
+| 4 | Players & repetition | ✅ Done. Profiles, Leitner boxes per player/place/direction, progress bars, test run with grade. |
+| 5 | "What is this?" modes | ✅ Done. Choose 4 / 8, typing with spelling feedback, mixing. |
+| 6 | Beyond Natural Earth | ✅ Mostly done. Online lookup (OpenStreetMap) and pointing out places by hand; provinces merged into school regions for France, Italy, Spain, UK and a few others. |
+| 7 | Polish & release | 🟡 Mostly. Works offline and can be installed (PWA); backup file (export/import); sharing a list as a link; GitHub Pages workflow ready. Not yet published. |
+
+**Checks:** 57 unit tests (scoring, repetition, matching, sessions, typing, sharing, colouring), 4 browser tests
+(a full round, a wrong answer, switching language, opening a shared list), type check clean, works offline.
+
+### Deviations from the plan
+
+- **Extra data source: GeoNames** (CC BY 4.0) for towns down to 1,000 inhabitants. Natural Earth has only
+  14 Dutch places and is missing Lelystad, so country maps needed more. Natural Earth names are still
+  preferred because they include Dutch exonyms (Keulen, Parijs).
+- **Provinces merged into regions** for France (13 regions), Italy (20), Spain (16, the Canary Islands are left off the map), UK (England, Scotland,
+  Wales, Northern Ireland), Slovenia, Latvia, Uganda and the Philippines, with Dutch names and regional capitals.
+- **Tiny countries become points** at scales where they disappear (Vatican City on the Europe map): they
+  are asked and drawn as a dot with a ring.
+- **"Wrong dot" on Easy** gives partial points (decision 5), but still counts as wrong for the repetition.
+- **Pasted spelling:** the sheet's spelling is kept when it is a different name for the place ("Den Bosch");
+  differences in accents or punctuation, and typos, get the map's official spelling.
+- **"What is this?" answer buttons** stay visible during feedback (green = right, red = chosen) so the map
+  doesn't jump.
+- **Feedback panel** sits in the bottom-left corner on wide screens, so the region stays visible.
+- **Rivers and lakes are shown by default on every level**, with separate settings, independent of the
+  learning list (replaces "rivers and lakes on the list, not on Hard"). Packs also contain the big rivers
+  and lakes of the surrounding countries, so the background doesn't look empty.
+- **Colouring countries/provinces** in six light tones (setting, on by default). Not on Hard, where the
+  colours would show the borders.
+- **Parts of countries** ("landsdeel": Vlaanderen, Wallonië, Brussels Hoofdstedelijk Gewest; Engeland,
+  Schotland, Wales, Noord-Ierland) on the Europe map and the Belgian map. Continent maps also got more
+  mid-sized rivers (Schelde, Maas) and landscapes (Ardennen, Centraal Massief, Kreta).
+- **Pasted lists:** a name in brackets is read as another name ("Ural (Oeral)"), and a country wins over an
+  island of the same name (Cyprus). Places that are not in the data at all, such as the Ruhrgebied, are
+  found with the online lookup in the list editor.
+
+### Known limitations
+
+- Countries crossing the 180° meridian (eastern Russia, Fiji, the Pacific part of Oceania) are cut at 180°.
+- USA: contiguous states only (Alaska and Hawaii would need insets).
+- For merged regions (e.g. England) the game still says "provincie".
+- Places pointed out by hand are points; places found online keep their shape (islands, lakes, rivers).
+- Some Natural Earth Dutch names may still be odd; corrections go in `pipeline/tables.mjs`.
+
+### Next steps
+
+1. Play-test with the kids; tune the distance percentages (section 2.5) and the timing.
+2. Publish on GitHub Pages (needs a GitHub repository).
+3. Fix the known limitations above where they matter for the kids' lists.

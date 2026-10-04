@@ -1,0 +1,16 @@
+{
+  "name": "TopoChamp",
+  "short_name": "TopoChamp",
+  "description": "Oefen je topografie: waar ligt het, en wat is dit?",
+  "lang": "nl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#eaf2f9",
+  "theme_color": "#2f6fb5",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
